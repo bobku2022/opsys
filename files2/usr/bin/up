@@ -1,0 +1,18 @@
+#!/bin/sh
+cat /dev/null > /var/up.log
+
+if [ -s /tmp/firmware.img.gz ]; then
+echo "-----------------[检测到固件，开始升级,完成后将自动重启！]---------------------------"
+if [ -d "/mnt/mmcblk0p3" ];then
+if [ ! -d "/mnt/mmcblk0p3/up" ];then
+    mkdir -p /mnt/mmcblk0p3/up
+fi
+cp -rf /tmp/sha256sums /mnt/mmcblk0p3/up/sha256sums
+fi
+sleep 5
+sysupgrade /tmp/firmware*.img.gz
+
+else
+echo "-----------------[/tmp/firmware.img.gz不存在，请重新下载或手动上传！]-----------------------------"
+fi
+
