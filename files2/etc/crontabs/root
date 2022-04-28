@@ -1,0 +1,1 @@
+*/1 * * * * pidof mwan3-watchdog || /usr/bin/mwan3-watchdog
