@@ -1,0 +1,48 @@
+#!/bin/sh
+cat /dev/null > /var/up.log
+echo "-----------------[检测是否需要更新！]---------------------------"
+if [ -e /tmp/sha256sums ]; then
+rm -rf /tmp/sha256sums
+fi
+if [ -e /tmp/version.buildinfo ]; then
+rm -rf /tmp/version.buildinfo
+fi
+wget-ssl -qT5 --no-check-certificate "https://github.com/cocokfeng/opsys/releases/latest/download/sha256sums" -O /tmp/sha256sums
+wget-ssl -qT5 --no-check-certificate "https://github.com/cocokfeng/opsys/releases/latest/download/version.buildinfo" -O /tmp/version.buildinfo
+if [ -s /mnt/mmcblk0p3/up/sha256sums -a -s /tmp/sha256sums ]; then
+echo "-----------------[检测到/mnt/mmcblk0p3目录存在，启用精准检测！]---------------------"
+v1=$(cat /mnt/mmcblk0p3/up/sha256sums |grep "squashfs-combined-efi"| sed '2,$d' | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g' | sed -n '1p')
+v2=$(cat /tmp/sha256sums |grep "squashfs-combined-efi"| sed '2,$d' | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g' | sed -n '1p')
+elif [ ! -s /mnt/mmcblk0p3/up/sha256sums -a -s /tmp/version.buildinfo -a -s /tmp/sha256sums ]; then
+echo "-----------------[检测中，请稍等！]---------------------"
+v1=$(cat /etc/openwrt_version |grep "r"| sed '2,$d' | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g' | sed -n '1p')
+v2=$(cat /tmp/version.buildinfo |grep "r"| sed '2,$d' | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g' | sed -n '1p')
+elif [ -s /tmp/version.buildinfo -a ! -s /tmp/sha256sums ]; then
+echo "-----------------[固件编译出错，请联系作者或等候修复！]---------------------"
+v1="0"
+v2="0"
+fi
+if [ "$v1" = "0" ];then
+sleep 5
+else
+if [ "$v1" = "$v2" ];then
+echo "-----------------[已经是最新固件，无需更新！]---------------------"
+else
+echo "--------------[检测到最新固件，系统即将下载最新固件]--------------"
+echo "---[开始下载固件，速度慢的请开启科学，耐心等待几分钟]---"
+wget-ssl -qT5 --no-check-certificate "https://github.com/cocokfeng/opsys/releases/latest/download/openwrt-x86-64-generic-squashfs-combined-efi.img.gz" -O /tmp/firmware.img.gz
+sleep 5
+if [ -s /tmp/firmware.img.gz ]; then
+echo "-----------------[固件下载完成，请手动点击升级按键！]---------------------------"
+else
+echo "-----------[下载失败，可能网络问题或服务器固件出问题!稍后再试！]-------------"
+fi
+fi
+fi
+
+
+
+
+
+
+
